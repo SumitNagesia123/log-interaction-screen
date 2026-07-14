@@ -1,0 +1,27 @@
+# Python
+backend/.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+backend/app/agent/__pycache__/
+backend/app/api/__pycache__/
+backend/app/db/__pycache__/
+backend/app/schemas/__pycache__/
+
+# Node / React
+frontend/node_modules/
+frontend/dist/
+frontend/.cache/
+
+# Databases
+*.db
+*.sqlite3
+
+# Environment & IDE
+.env
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
