@@ -94,6 +94,21 @@ def extract_entities_fallback(text: str, db: Session) -> Dict[str, Any]:
     if "yesterday" in text_lower:
         interaction_date = (datetime.datetime.now() - datetime.timedelta(days=1)).isoformat()
         
+    attendees = None
+    att_m = re.search(r'\b(?:met with|visited)\s+([a-zA-Z\s\.,]+?)(?:\s+and\s+discussed|\s+to\s+discuss|\s+about|\s+on|\s*\.|$)', text, re.IGNORECASE)
+    if att_m:
+        attendees = att_m.group(1).strip()
+    else:
+        attendees = hcp_name
+
+    materials_shared = None
+    if "brochure" in text_lower:
+        materials_shared = "Brochures"
+    elif "slides" in text_lower:
+        materials_shared = "Clinical Presentation Slides"
+    elif "literature" in text_lower or "document" in text_lower:
+        materials_shared = "Product Information Leaflet"
+
     target_interaction_id = None
     if is_edit:
         hcp_obj = None
@@ -113,6 +128,8 @@ def extract_entities_fallback(text: str, db: Session) -> Dict[str, Any]:
         "datetime": interaction_date,
         "discussion_notes": text,
         "sentiment": sentiment,
+        "attendees": attendees,
+        "materials_shared": materials_shared,
         "products": discussed_products,
         "samples": samples,
         "follow_up_required": follow_up_required,
@@ -175,6 +192,8 @@ async def extract_entities_node(state: AgentState, config: RunnableConfig) -> Di
             "- datetime: string (ISO format or null. If user says 'yesterday', calculate relative to now)\n"
             "- discussion_notes: string (summary of clinical discussion)\n"
             "- sentiment: string ('Positive', 'Neutral', 'Negative')\n"
+            "- attendees: string or null (people present at the interaction, e.g. 'Dr. Smith, Nurse Joy')\n"
+            "- materials_shared: string or null (materials, brochures, or documents shared with the HCP, e.g. 'brochures')\n"
             "- products: list of strings (brand names of products discussed)\n"
             "- samples: list of objects with keys 'product_name' and 'quantity'\n"
             "- follow_up_required: boolean\n"
@@ -297,6 +316,8 @@ async def preview_confirm_node(state: AgentState, config: RunnableConfig) -> Dic
         datetime=FieldMetadata(source="ai", confidence=confidence),
         discussion_notes=FieldMetadata(source="ai", confidence=confidence),
         sentiment=FieldMetadata(source="ai", confidence=confidence),
+        attendees=FieldMetadata(source="ai" if extracted.get("attendees") else "manual", confidence=confidence),
+        materials_shared=FieldMetadata(source="ai" if extracted.get("materials_shared") else "manual", confidence=confidence),
         follow_up_required=FieldMetadata(source="ai", confidence=confidence),
         follow_up_date=FieldMetadata(source="ai" if extracted.get("follow_up_date") else "manual", confidence=confidence),
         follow_up_notes=FieldMetadata(source="ai" if extracted.get("follow_up_notes") else "manual", confidence=confidence),
@@ -311,6 +332,8 @@ async def preview_confirm_node(state: AgentState, config: RunnableConfig) -> Dic
         datetime=extracted.get("datetime"),
         discussion_notes=extracted.get("discussion_notes"),
         sentiment=extracted.get("sentiment", "Neutral"),
+        attendees=extracted.get("attendees"),
+        materials_shared=extracted.get("materials_shared"),
         products=[db.query(Product).filter_by(id=pid).first().name for pid in extracted.get("product_ids", [])],
         samples=extracted.get("samples", []),
         follow_up_required=extracted.get("follow_up_required", False),

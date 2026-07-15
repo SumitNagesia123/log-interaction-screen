@@ -26,6 +26,7 @@ def reconstruct_metadata(interaction: Interaction, db: Session) -> InteractionMe
     fields_meta = {}
     standard_fields = [
         "hcp_id", "type", "datetime", "discussion_notes", "sentiment",
+        "attendees", "materials_shared",
         "follow_up_required", "follow_up_date", "follow_up_notes",
         "product_ids", "samples"
     ]
@@ -61,6 +62,8 @@ def build_interaction_response(interaction: Interaction, meta: InteractionMetada
         datetime=interaction.datetime,
         discussion_notes=interaction.discussion_notes,
         sentiment=interaction.sentiment,
+        attendees=interaction.attendees,
+        materials_shared=interaction.materials_shared,
         follow_up_required=interaction.follow_up_required,
         follow_up_date=interaction.follow_up_date,
         follow_up_notes=interaction.follow_up_notes,
@@ -84,9 +87,9 @@ def get_interactions(db: Session = Depends(get_db), current_user: dict = Depends
         res.append(build_interaction_response(inter, meta))
     return res
 
-@router.get("/api/interactions/{id}", response_model=InteractionResponse)
-def get_interaction(id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
-    inter = db.query(Interaction).filter(Interaction.id == id).first()
+@router.get("/api/interactions/{interaction_id}", response_model=InteractionResponse)
+def get_interaction(interaction_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
+    inter = db.query(Interaction).filter(Interaction.id == interaction_id).first()
     if not inter:
         raise HTTPException(status_code=404, detail="Interaction not found")
     meta = reconstruct_metadata(inter, db)
@@ -101,9 +104,11 @@ def create_interaction(data: InteractionCreate, source: str = "manual", confiden
     db_interaction = Interaction(
         hcp_id=data.hcp_id,
         type=data.type,
-        datetime=data.datetime or datetime.datetime.utcnow(),
+        datetime=data.datetime or datetime.datetime.now(datetime.timezone.utc),
         discussion_notes=data.discussion_notes,
         sentiment=data.sentiment,
+        attendees=data.attendees,
+        materials_shared=data.materials_shared,
         follow_up_required=data.follow_up_required,
         follow_up_date=data.follow_up_date,
         follow_up_notes=data.follow_up_notes
@@ -142,9 +147,9 @@ def create_interaction(data: InteractionCreate, source: str = "manual", confiden
     meta = reconstruct_metadata(db_interaction, db)
     return build_interaction_response(db_interaction, meta)
 
-@router.put("/api/interactions/{id}", response_model=InteractionResponse)
-def update_interaction(id: int, data: InteractionUpdate, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
-    db_interaction = db.query(Interaction).filter(Interaction.id == id).first()
+@router.put("/api/interactions/{interaction_id}", response_model=InteractionResponse)
+def update_interaction(interaction_id: int, data: InteractionUpdate, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
+    db_interaction = db.query(Interaction).filter(Interaction.id == interaction_id).first()
     if not db_interaction:
         raise HTTPException(status_code=404, detail="Interaction not found")
 
@@ -155,7 +160,7 @@ def update_interaction(id: int, data: InteractionUpdate, db: Session = Depends(g
     def check_change(field_name: str, new_val: Any, old_val: Any):
         if new_val is not None and new_val != old_val:
             edits.append(AuditLog(
-                interaction_id=id,
+                interaction_id=interaction_id,
                 action="UPDATE",
                 field_name=field_name,
                 old_value=str(old_val) if old_val is not None else "",
@@ -187,6 +192,14 @@ def update_interaction(id: int, data: InteractionUpdate, db: Session = Depends(g
         if check_change("sentiment", data.sentiment, db_interaction.sentiment):
             db_interaction.sentiment = data.sentiment
 
+    if data.attendees is not None:
+        if check_change("attendees", data.attendees, db_interaction.attendees):
+            db_interaction.attendees = data.attendees
+
+    if data.materials_shared is not None:
+        if check_change("materials_shared", data.materials_shared, db_interaction.materials_shared):
+            db_interaction.materials_shared = data.materials_shared
+
     if data.follow_up_required is not None:
         if check_change("follow_up_required", data.follow_up_required, db_interaction.follow_up_required):
             db_interaction.follow_up_required = data.follow_up_required
@@ -212,10 +225,10 @@ def update_interaction(id: int, data: InteractionUpdate, db: Session = Depends(g
         
         if old_samples_dict != new_samples_dict:
             check_change("samples", str(new_samples_dict), str(old_samples_dict))
-            db.query(InteractionSample).filter(InteractionSample.interaction_id == id).delete()
+            db.query(InteractionSample).filter(InteractionSample.interaction_id == interaction_id).delete()
             for s in data.samples:
                 db_sample = InteractionSample(
-                    interaction_id=id,
+                    interaction_id=interaction_id,
                     product_id=s.product_id,
                     quantity=s.quantity
                 )
@@ -224,13 +237,13 @@ def update_interaction(id: int, data: InteractionUpdate, db: Session = Depends(g
     for edit in edits:
         db.add(edit)
 
-    db_interaction.updated_at = datetime.datetime.utcnow()
+    db_interaction.updated_at = datetime.datetime.now(datetime.timezone.utc)
     db.commit()
     db.refresh(db_interaction)
 
     meta = reconstruct_metadata(db_interaction, db)
     return build_interaction_response(db_interaction, meta)
 
-@router.get("/api/interactions/{id}/audit", response_model=List[AuditLogSchema])
-def get_interaction_audit(id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
-    return db.query(AuditLog).filter(AuditLog.interaction_id == id).order_by(AuditLog.timestamp.desc()).all()
+@router.get("/api/interactions/{interaction_id}/audit", response_model=List[AuditLogSchema])
+def get_interaction_audit(interaction_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
+    return db.query(AuditLog).filter(AuditLog.interaction_id == interaction_id).order_by(AuditLog.timestamp.desc()).all()

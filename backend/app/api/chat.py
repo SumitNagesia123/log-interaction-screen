@@ -60,7 +60,7 @@ async def chat_confirm(request: ChatConfirmRequest, db: Session = Depends(get_db
             })
 
     # Convert ISO datetime string safely
-    dt_val = datetime.datetime.utcnow()
+    dt_val = datetime.datetime.now(datetime.timezone.utc)
     if card.datetime:
         try:
             # Handle standard ISO Z format
@@ -83,6 +83,8 @@ async def chat_confirm(request: ChatConfirmRequest, db: Session = Depends(get_db
         "datetime": dt_val,
         "discussion_notes": card.discussion_notes,
         "sentiment": card.sentiment or "Neutral",
+        "attendees": card.attendees,
+        "materials_shared": card.materials_shared,
         "follow_up_required": card.follow_up_required,
         "follow_up_date": follow_up_date_val,
         "follow_up_notes": card.follow_up_notes,

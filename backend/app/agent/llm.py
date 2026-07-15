@@ -33,7 +33,11 @@ async def call_llm(messages: List[Dict[str, str]], json_mode: bool = False) -> s
             model = genai.GenerativeModel('gemini-1.5-flash')
             prompt = "\n".join([f"{m['role'].upper()}: {m['content']}" for m in messages])
             if json_mode:
-                response = model.generate_content(prompt, generation_config={"response_mime_type": "application/json"})
+                try:
+                    response = model.generate_content(prompt, generation_config={"response_mime_type": "application/json"})
+                except Exception as e_config:
+                    # Fallback for older versions of google-generativeai that do not support response_mime_type
+                    response = model.generate_content(prompt)
             else:
                 response = model.generate_content(prompt)
             return response.text

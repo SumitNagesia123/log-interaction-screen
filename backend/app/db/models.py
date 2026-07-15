@@ -43,10 +43,13 @@ class Interaction(Base):
     datetime = Column(DateTime, default=dt_module.datetime.utcnow)
     discussion_notes = Column(Text, nullable=True)
     sentiment = Column(String(50), nullable=True)  # Positive, Neutral, Negative
+    attendees = Column(Text, nullable=True)
+    materials_shared = Column(Text, nullable=True)
     follow_up_required = Column(Boolean, default=False)
     follow_up_date = Column(Date, nullable=True)
     follow_up_notes = Column(Text, nullable=True)
     created_at = Column(DateTime, default=dt_module.datetime.utcnow)
+
     updated_at = Column(DateTime, default=dt_module.datetime.utcnow, onupdate=dt_module.datetime.utcnow)
 
     # Relationships

@@ -76,6 +76,41 @@
   --pill-bg: rgba(15, 23, 42, 0.04);
 }
 
+/* Light mode legibility overrides for tags and badges */
+:root.light .product-tag {
+  color: #1d4ed8;
+  background: rgba(59, 130, 246, 0.08);
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
+:root.light .sample-tag {
+  color: #b45309;
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.25);
+}
+
+:root.light .badge-ai {
+  color: #6d28d9;
+  background: rgba(139, 92, 246, 0.08);
+  border-color: rgba(139, 92, 246, 0.2);
+}
+
+:root.light .badge-sentiment-positive {
+  color: #047857;
+  background: rgba(16, 185, 129, 0.08);
+}
+
+:root.light .badge-sentiment-neutral {
+  color: #1d4ed8;
+  background: rgba(59, 130, 246, 0.08);
+}
+
+:root.light .badge-sentiment-negative {
+  color: #b91c1c;
+  background: rgba(239, 68, 68, 0.08);
+}
+
+
 
 * {
   box-sizing: border-box;
@@ -945,4 +980,15 @@ textarea {
   align-items: center;
   gap: 8px;
   margin-top: 4px;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }

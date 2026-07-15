@@ -14,6 +14,8 @@ class PreviewCard(BaseModel):
     datetime: Optional[str] = None
     discussion_notes: Optional[str] = None
     sentiment: Optional[str] = None
+    attendees: Optional[str] = None
+    materials_shared: Optional[str] = None
     products: List[str] = []
     samples: List[dict] = []  # e.g., [{"product_name": "CardioX", "quantity": 2}]
     follow_up_required: bool = False

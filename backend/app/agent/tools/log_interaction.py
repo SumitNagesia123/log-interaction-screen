@@ -11,9 +11,11 @@ def log_interaction_tool(data: Dict[str, Any], db: Session) -> Interaction:
     db_interaction = Interaction(
         hcp_id=data["hcp_id"],
         type=data.get("type", "Visit"),
-        datetime=data.get("datetime") or datetime.datetime.utcnow(),
+        datetime=data.get("datetime") or datetime.datetime.now(datetime.timezone.utc),
         discussion_notes=data.get("discussion_notes"),
         sentiment=data.get("sentiment", "Neutral"),
+        attendees=data.get("attendees"),
+        materials_shared=data.get("materials_shared"),
         follow_up_required=data.get("follow_up_required", False),
         follow_up_date=data.get("follow_up_date"),
         follow_up_notes=data.get("follow_up_notes")

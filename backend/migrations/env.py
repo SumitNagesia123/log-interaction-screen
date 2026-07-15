@@ -8,7 +8,7 @@ from alembic import context
 # Add root folder to sys.path so we can import backend package
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
-from backend.models import Base
+from backend.app.db.models import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

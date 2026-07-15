@@ -45,6 +45,14 @@ def edit_interaction_tool(interaction_id: int, diff: Dict[str, Any], db: Session
         log_change("sentiment", db_interaction.sentiment, diff["sentiment"])
         db_interaction.sentiment = diff["sentiment"]
 
+    if "attendees" in diff and diff["attendees"] is not None:
+        log_change("attendees", db_interaction.attendees, diff["attendees"])
+        db_interaction.attendees = diff["attendees"]
+
+    if "materials_shared" in diff and diff["materials_shared"] is not None:
+        log_change("materials_shared", db_interaction.materials_shared, diff["materials_shared"])
+        db_interaction.materials_shared = diff["materials_shared"]
+
     if "follow_up_required" in diff and diff["follow_up_required"] is not None:
         log_change("follow_up_required", db_interaction.follow_up_required, diff["follow_up_required"])
         db_interaction.follow_up_required = diff["follow_up_required"]
@@ -78,7 +86,7 @@ def edit_interaction_tool(interaction_id: int, diff: Dict[str, Any], db: Session
                 )
                 db.add(db_sample)
 
-    db_interaction.updated_at = datetime.datetime.utcnow()
+    db_interaction.updated_at = datetime.datetime.now(datetime.timezone.utc)
     db.commit()
     db.refresh(db_interaction)
     return db_interaction

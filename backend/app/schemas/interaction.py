@@ -36,6 +36,8 @@ class InteractionBase(BaseModel):
     datetime: Optional[dt_module.datetime] = None
     discussion_notes: Optional[str] = None
     sentiment: Optional[str] = None  # Positive, Neutral, Negative
+    attendees: Optional[str] = None
+    materials_shared: Optional[str] = None
     follow_up_required: bool = False
     follow_up_date: Optional[dt_module.date] = None
     follow_up_notes: Optional[str] = None
@@ -50,6 +52,8 @@ class InteractionUpdate(BaseModel):
     datetime: Optional[dt_module.datetime] = None
     discussion_notes: Optional[str] = None
     sentiment: Optional[str] = None
+    attendees: Optional[str] = None
+    materials_shared: Optional[str] = None
     follow_up_required: Optional[bool] = None
     follow_up_date: Optional[dt_module.date] = None
     follow_up_notes: Optional[str] = None
@@ -84,6 +88,8 @@ class InteractionMetadata(BaseModel):
     datetime: FieldMetadata = Field(default_factory=FieldMetadata)
     discussion_notes: FieldMetadata = Field(default_factory=FieldMetadata)
     sentiment: FieldMetadata = Field(default_factory=FieldMetadata)
+    attendees: FieldMetadata = Field(default_factory=FieldMetadata)
+    materials_shared: FieldMetadata = Field(default_factory=FieldMetadata)
     follow_up_required: FieldMetadata = Field(default_factory=FieldMetadata)
     follow_up_date: FieldMetadata = Field(default_factory=FieldMetadata)
     follow_up_notes: FieldMetadata = Field(default_factory=FieldMetadata)
@@ -98,6 +104,8 @@ class InteractionResponse(BaseModel):
     datetime: dt_module.datetime
     discussion_notes: Optional[str] = None
     sentiment: Optional[str] = None
+    attendees: Optional[str] = None
+    materials_shared: Optional[str] = None
     follow_up_required: bool
     follow_up_date: Optional[dt_module.date] = None
     follow_up_notes: Optional[str] = None

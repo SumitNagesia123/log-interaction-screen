@@ -1,0 +1,2 @@
+[tool.pyrefly]
+python-interpreter-path = "c:/Projects/Log Interaction Screen/backend/.venv/Scripts/python.exe"
